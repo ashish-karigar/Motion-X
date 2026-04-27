@@ -3,6 +3,7 @@ import mediapipe as mp
 import numpy as np
 import threading
 import time
+import pyautogui
 
 try:
     import pyttsx3
@@ -90,6 +91,12 @@ class SkeletonViewer:
     def landmark_to_point(self, landmark, width, height):
         return int(landmark.x * width), int(landmark.y * height)
 
+    def press_key(self, key):
+        pyautogui.keyDown(key)
+        time.sleep(0.08)
+        pyautogui.keyUp(key)
+        print(f"Pressed: {key.upper()}")
+
     def draw_connection(self, canvas, landmarks, start, end, width, height, color, thickness):
         start_lm = landmarks[start.value]
         end_lm = landmarks[end.value]
@@ -139,6 +146,7 @@ class SkeletonViewer:
 
         if x_diff < -self.center_tolerance_x:
             print("Action detected: LEFT_ARROW")
+            self.press_key("a")
 
             # Move center lane to user's new torso position
             self.target_center_x = center_x
@@ -148,6 +156,7 @@ class SkeletonViewer:
 
         if x_diff > self.center_tolerance_x:
             print("Action detected: RIGHT_ARROW")
+            self.press_key("d")
 
             # Move center lane to user's new torso position
             self.target_center_x = center_x
@@ -250,11 +259,13 @@ class SkeletonViewer:
         # larger y = body moved downward
         if y_diff < -self.upper_tolerance_y:
             print("Action detected: UP_ARROW")
+            self.press_key("a")
             self.last_action_time = now
             return "UP_ARROW"
 
         if y_diff > self.lower_tolerance_y:
             print("Action detected: DOWN_ARROW")
+            self.press_key("s")
             self.last_action_time = now
             return "DOWN_ARROW"
 
