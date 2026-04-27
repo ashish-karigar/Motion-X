@@ -67,8 +67,8 @@ class SkeletonViewer:
 
         # Center/tolerance zone settings
         self.target_center_x = 0.50
-        self.center_tolerance_x = 0.10
-        # We only center horizontally. Vertical position does not matter.
+        self.center_tolerance_x = 0.10  # fallback until shoulders are detected
+        self.x_lane_width_scale = 0.70  # lane total width ≈ shoulder width
 
         self.extra_connections = [
             (self.mp_pose.PoseLandmark.LEFT_SHOULDER, self.mp_pose.PoseLandmark.RIGHT_SHOULDER),
@@ -156,6 +156,18 @@ class SkeletonViewer:
             return "LEFT_ARROW -> NEW CENTER SET"
 
         return "ADJUST POSITION"
+
+    def update_x_tolerance_from_shoulders(self, landmarks):
+        left_shoulder = landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value]
+        right_shoulder = landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value]
+
+        if left_shoulder.visibility < 0.45 or right_shoulder.visibility < 0.45:
+            return
+
+        shoulder_width = abs(right_shoulder.x - left_shoulder.x)
+
+        # center_tolerance_x is half-lane width
+        self.center_tolerance_x = shoulder_width * self.x_lane_width_scale
 
     def draw_center_zone(self, canvas, width, height):
         center_x1 = int((self.target_center_x - self.center_tolerance_x) * width)
@@ -266,6 +278,7 @@ class SkeletonViewer:
             return canvas
 
         landmarks = results.pose_landmarks.landmark
+        self.update_x_tolerance_from_shoulders(landmarks)
         body_center = self.get_body_center(landmarks)
 
         guide_text = "Finding body center"
