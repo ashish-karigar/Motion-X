@@ -60,11 +60,11 @@ class SkeletonViewer:
         self.voice = VoiceGuide()
 
         self.last_action_time = 0
-        self.action_cooldown = 0.8
+        self.action_cooldown = 0.35
         self.target_center_y = None
         self.upper_tolerance_y = 0.08  # jump / UP
         self.lower_tolerance_y = 0.13  # crouch / DOWN
-        self.y_lane_follow_speed = 0.08
+        self.y_lane_follow_speed = 0.09
 
         # Center/tolerance zone settings
         self.target_center_x = 0.50
@@ -92,8 +92,15 @@ class SkeletonViewer:
         return int(landmark.x * width), int(landmark.y * height)
 
     def press_key(self, key):
+        threading.Thread(
+            target=self._press_key_thread,
+            args=(key,),
+            daemon=True
+        ).start()
+
+    def _press_key_thread(self, key):
         pyautogui.keyDown(key)
-        time.sleep(0.08)
+        time.sleep(0.025)
         pyautogui.keyUp(key)
         print(f"Pressed: {key.upper()}")
 
