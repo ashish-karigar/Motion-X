@@ -266,7 +266,7 @@ class SkeletonViewer:
         # larger y = body moved downward
         if y_diff < -self.upper_tolerance_y:
             print("Action detected: UP_ARROW")
-            self.press_key("a")
+            self.press_key("w")
             self.last_action_time = now
             return "UP_ARROW"
 
